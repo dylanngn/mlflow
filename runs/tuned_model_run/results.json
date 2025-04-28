@@ -1,0 +1,1 @@
+{"best_params": {"C": 1.0, "penalty": "l2", "solver": "liblinear"}, "best_accuracy": 0.7637492607924306}

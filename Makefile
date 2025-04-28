@@ -7,7 +7,7 @@ PYTHON := python3
 VENV_DIR := venv
 
 # Activate virtual environment
-ACTIVATE := source $(VENV_DIR)/bin/activate
+ACTIVATE := bash -c "source $(VENV_DIR)/bin/activate" # change here
 
 # Default target
 .DEFAULT_GOAL := help

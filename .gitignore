@@ -5,8 +5,3 @@ __pycache__/
 venv/
 env/
 *.log
-
-# Data
-runs/
-*.pkl
-model_comparison_report.json

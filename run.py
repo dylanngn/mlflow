@@ -1,6 +1,6 @@
-import fire
 import logging
 import os
+import sys
 from sklearn.model_selection import train_test_split
 
 # Import functions from utils
@@ -16,36 +16,41 @@ logger = logging.getLogger(__name__)
 EXPERIMENT_NAME = "Classification_Model_Experiment"
 RUNS_DIR = "runs"  # Directory to store run data
 
-class MLWorkflow:
+def main():
     """
-    A command-line interface for the ML workflow.
+    Main function to run the ML workflow.  Handles command-line arguments directly.
     """
+    # Ensure the runs directory exists
+    os.makedirs(RUNS_DIR, exist_ok=True)
+    sys.path.append(os.getcwd()) # add this
 
-    def __init__(self):
-        """
-        Initializes the MLWorkflow class.
-        """
-        # Ensure the runs directory exists
-        os.makedirs(RUNS_DIR, exist_ok=True)
+    if len(sys.argv) < 2:
+        print("Usage: python run.py <command> [options]")
+        print("Commands: train, report, run_app")
+        return
 
-    def train(
-        self,
-        tuning_strategy: str = "none",
-        c_values: str = "0.01,0.1,1,10,100",
-        solvers: str = "liblinear,saga",
-        penalties: str = "l1,l2",
-    ):
-        """
-        Trains and tunes a classification model.
+    command = sys.argv[1]
 
-        Args:
-            tuning_strategy (str, optional): Tuning strategy ('none', 'grid', 'random'). Defaults to 'none'.
-            c_values (str, optional): Comma-separated values for the 'C' parameter. Defaults to '0.01,0.1,1,10,100'.
-            solvers (str, optional): Comma-separated values for the 'solver' parameter. Defaults to 'liblinear,saga'.
-            penalties (str, optional): Comma-separated values for the 'penalty' parameter. Defaults to 'l1,l2'.
-        """
+    if command == "train":
+        tuning_strategy = "none"
+        c_values = "0.01,0.1,1,10,100"
+        solvers = "liblinear,saga"
+        penalties = "l1,l2"
+
+        if len(sys.argv) > 2:
+            for arg in sys.argv[2:]:
+                if "=" in arg:
+                    key, value = arg.split("=")
+                    if key == "tuning_strategy":
+                        tuning_strategy = value
+                    elif key == "c_values":
+                        c_values = value
+                    elif key == "solvers":
+                        solvers = value
+                    elif key == "penalties":
+                        penalties = value
+
         logger.info(f"Starting training with tuning strategy: {tuning_strategy}")
-
         # Create and split data
         X, y = create_training_data()
         X_train, X_test, y_train, y_test = train_test_split(
@@ -71,7 +76,6 @@ class MLWorkflow:
             c_values_list = [float(c) for c in c_values.split(",")]
             solvers_list = solvers.split(",")
             penalties_list = penalties.split(",")
-
             tuned_model, _ = tune_model(
                 X_train,
                 y_train,
@@ -90,23 +94,23 @@ class MLWorkflow:
             )
         return model
 
-    def report(self):
-        """
-        Generates a report comparing the performance of different model runs.
-        """
+    elif command == "report":
         logger.info("Generating model comparison report...")
         generate_report()
         logger.info("Report generation complete.")
 
-    def run_app(self):
-        """
-        Runs the Flask application.
-        """
+    elif command == "run_app":
         logger.info("Starting the Flask application...")
-        from app.app import create_app_instance # changed from create_app
+        from app.app import create_app_instance
 
-        app = create_app_instance() # changed from create_app()
-        app.run(debug=True, port=5000)  # Keep debug True for development
+        app = create_app_instance()
+        app.run(debug=True, port=5000)
+    else:
+        print("Error: Invalid command")
+        print("Usage: python run.py <command> [options]")
+        print("Commands: train, report, run_app")
+        return
+
 
 if __name__ == "__main__":
-    fire.Fire(MLWorkflow)
+    main()
