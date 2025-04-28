@@ -3,7 +3,6 @@ from flask import Flask, request, jsonify
 import logging
 import os
 import pickle  # For saving and loading models
-from utils.model_utils import load_model
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -11,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 # Global variable to hold the best model
 best_model = None
-EXPERIMENT_CONFIG_FILE = "experiment_config.json" # File to store experiment config
+EXPERIMENT_CONFIG_FILE = "experiment_config.json"  # File to store experiment config
+RUNS_DIR = "runs"
 
 
 def create_app():
@@ -26,11 +26,9 @@ def create_app():
     """
     app = Flask(__name__)
     # Add a logger for the flask app
-    flask_logger = logging.getLogger('werkzeug')
+    flask_logger = logging.getLogger("werkzeug")
     flask_logger.setLevel(logging.INFO)
     app.logger.addHandler(flask_logger)
-
-
 
     @app.route("/predict", methods=["POST"])
     def predict():
@@ -91,6 +89,7 @@ def create_app():
 
     return app
 
+
 def load_experiment_config():
     """
     Loads experiment-level configuration data from a JSON file.
@@ -109,3 +108,25 @@ def load_experiment_config():
     except Exception as e:
         logger.error(f"Failed to load experiment config: {e}")
         return {}  # Return empty dict on error, so app can run
+
+
+def load_model(run_id):
+    """
+    Loads the trained model from the specified run.
+
+    Args:
+        run_id (str): Unique identifier for the run.
+
+    Returns:
+        LogisticRegression: The loaded model.
+    """
+    run_dir = os.path.join(RUNS_DIR, run_id)
+    model_path = os.path.join(run_dir, "model.pkl")
+    try:
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+        return model
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Model file not found at {model_path}")
+    except Exception as e:
+        raise Exception(f"Error loading model from {model_path}: {e}")

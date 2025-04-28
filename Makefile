@@ -7,7 +7,7 @@ PYTHON := python3
 VENV_DIR := venv
 
 # Activate virtual environment
-ACTIVATE := bash -c "source $(VENV_DIR)/bin/activate" # change here
+ACTIVATE := . $(VENV_DIR)/bin/activate
 
 # Default target
 .DEFAULT_GOAL := help
@@ -37,19 +37,19 @@ setup:
 run:
 	@echo "Running the Flask application..."
 	$(ACTIVATE)
-	python app/app.py
+	$(PYTHON) run.py run_app # Changed Here
 
 # Train the model
 train:
 	@echo "Training the model..."
 	$(ACTIVATE)
-	python run.py train
+	$(PYTHON) run.py train
 
 # Generate the model comparison report
 report:
 	@echo "Generating the model comparison report..."
 	$(ACTIVATE)
-	python run.py report
+	$(PYTHON) run.py report
 
 # Clean up the virtual environment
 clean:

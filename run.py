@@ -105,9 +105,9 @@ def main():
 
     elif command == "run_app":
         logger.info("Starting the Flask application...")
-        from app.app import create_app_instance
+        from app.app import create_app
 
-        app = create_app_instance()
+        app = create_app()
         app.run(debug=True, port=5000)
     else:
         print("Error: Invalid command")
