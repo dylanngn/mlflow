@@ -1,0 +1,44 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:  # Enable manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository }}/ml-flask-app:latest .
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # Use GITHUB_TOKEN
+
+      - name: Push Docker image to GitHub Container Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}/ml-flask-app:latest
+
+      - name: Deploy to Render
+        run: |
+          curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.RENDER_DEPLOYMENT_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{ "clearCache": "clear" }' \
+          https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploy

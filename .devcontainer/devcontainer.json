@@ -1,0 +1,18 @@
+{
+    "name": "MLflow Project with CI/CD",
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "context": "."
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens"
+    ],
+    "forwardPorts": [5000],
+    "postCreateCommand": "python -m pip install -r requirements.txt"
+}
