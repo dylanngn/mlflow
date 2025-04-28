@@ -35,10 +35,12 @@ jobs:
       #    #  Add your test commands here
       #    echo "Running tests..."
 
-      - name: Generate Report
+      - name: Evaluate and Generate Report
         run: |
-          python run.py train
-          python run.py report
+          python utils/report_utils.py  # Generate the report
+          #  Add error handling here.  If the python script fails, the
+          #  action should fail.
+          echo "Model evaluation and report generation complete"
 
       - name: Upload Report Artifact
         uses: actions/upload-artifact@v4

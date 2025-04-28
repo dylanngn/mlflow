@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from datetime import datetime
 from sklearn.model_selection import train_test_split
 
 # Import functions from utils
@@ -22,7 +23,7 @@ def main():
     """
     # Ensure the runs directory exists
     os.makedirs(RUNS_DIR, exist_ok=True)
-    sys.path.append(os.getcwd()) # add this
+    sys.path.append(os.getcwd())
 
     if len(sys.argv) < 2:
         print("Usage: python run.py <command> [options]")
@@ -65,29 +66,32 @@ def main():
                 "penalty": "l2",
                 "random_state": 42,
             }
-            base_run_id = "base_model_run"
-            train_model(X_train, y_train, base_model_params, base_run_id)
-            model = load_model(base_run_id)
-            evaluate_model(model, X_test, y_test, base_run_id)
-            logger.info("Base model training complete.")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            run_id = f"base_model_run_{timestamp}"
+            train_model(X_train, y_train, base_model_params, run_id)
+            model = load_model(run_id)
+            evaluate_model(model, X_test, y_test, run_id)
+            logger.info(f"Base model training complete. Run ID: {run_id}")
 
         elif tuning_strategy in ["grid", "random"]:
             # --- Tuning ---
             c_values_list = [float(c) for c in c_values.split(",")]
             solvers_list = solvers.split(",")
             penalties_list = penalties.split(",")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            run_id = f"{tuning_strategy}_search_run_{timestamp}"
             tuned_model, _ = tune_model(
                 X_train,
                 y_train,
                 tuning_strategy,
-                "tuned_model_run",  # Fix the run_id
+                run_id,
                 c_values_list,
                 solvers_list,
                 penalties_list
             )
-            model = load_model("tuned_model_run")
-            evaluate_model(model, X_test, y_test, "tuned_model_run")
-            logger.info(f"{tuning_strategy.capitalize()} search complete.")
+            model = load_model(run_id)
+            evaluate_model(model, X_test, y_test, run_id)
+            logger.info(f"{tuning_strategy.capitalize()} search complete. Run ID: {run_id}")
         else:
             raise ValueError(
                 "Invalid tuning strategy.  Choose 'none', 'grid', or 'random'."
